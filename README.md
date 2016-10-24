@@ -1,2 +1,6 @@
 # kif-idp-client
-Client implementation in Java/J2SE for KIF-IDP
+
+Bibliothèque JAR permettant une implementation simple en Java d'un client de KIF-IdP.
+
+Cette bibliothèque réalise les opérations de chiffrement et de déchiffrement nécessaires pour communiquer avec KIF-IdP.
+
