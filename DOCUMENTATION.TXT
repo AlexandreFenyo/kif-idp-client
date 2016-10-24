@@ -1,0 +1,91 @@
+A. Fenyo - 2016
+
+Bibliothèque LIBFC
+
+Cette archive constitue un projet Eclipse et peut être chargée dans Eclipse via un simple import : menu "File / Import / Existing Projects into Workspace" et sélectionner le répertoire racine.
+
+--------------------------------------------------------------------------------
+
+Ce projet Eclipse est décomposé comme ceci :
+
+- répertoire src :
+  contient les sources de la bibliothèque : fichiers src/kif/libfc/{Identity,Tools}.java
+  contient un exemple d'utilisation de la bibliothèque : fichier src/kif/libfc/CommandLine.java
+
+- répertoire libs :
+  contient les 4 bibliothèques dont libfc-1_0.jar dépend :
+  - bcprov-jdk15on-153.jar : bibliothèque de chiffrement
+  - gson-2.3.1.jar : bibliothèque de traitement du format JSON
+  - commons-codec-1.10.jar et commons-lang3-3.4.jar : utilitaires généralistes
+
+- répertoire jar :
+  contient le fichier libfc-1_0.jar qui constitue la bibliothèque de chiffrement/déchiffrement permettant de dialoguer avec le médiateur FranceConnect KIF-IdP
+  contient le fichier libfc-1_0-with-dependencies.jar qui intègre à la fois la bibliothèque de chiffrement/déchiffrement et ses dépendances
+
+- répertoire bin :
+  contient les fichiers .class compilés
+
+--------------------------------------------------------------------------------
+
+Pour recompiler LIBFC, il suffit d'intégrer cette archive dans Eclipse, lancer le menu "Project / Build All" et exporter dans le répertoire jar :
+  le fichier libfc-1_0.jar via le menu "File / Export / Runnable Jar File" et choisir "library handling" avec la valeur "copy required libraries into a sub-folder next to the generated jar" 
+  le fichier libfc-1_0-with-dependencies.jar via le menu "File / Export / Runnable Jar File" et choisir "library handling" avec la valeur "extract required libraries into generated jar"
+
+--------------------------------------------------------------------------------
+
+Exemple d'utilisation : le fichier CommandLine.java est un exemple d'utilisation autonome. Il précise les modifications à apporter pour l'intégrer dans un serveur de servlets.
+
+--------------------------------------------------------------------------------
+
+Utilisation et API :
+
+Le client du médiateur KIF-IdP partage avec ce dernier une clé (KEY) et un vecteur d'initialisation (IV), pour le chiffrement.
+
+1- Le client du médiateur KIF-IdP doit chiffrer une URL de callback pour le médiateur.
+Cette URL intègre en paramètres un identifiant de session et une valeur aléatoire anti-rejeu (nonce).
+
+LIBFC permet de :
+  - générer le nonce
+  - chiffrer l'URL de callback
+
+Pour cela, le client :
+  - instancie la classe kif.libfc.Tools en passant les valeurs KEY et IV au constructeur
+  - invoque la méthode Tools.SetState(String) de l'instance de la classe Tools avec la valeur de JSESSIONID en paramètre
+  - sauvegarde dans la session web le nonce généré par l'instance de Tools, en le récupérant par la méthode String Tools.getNonce()
+  - récupère le message chiffré en invoquant la méthode encode(String) de l'instance de la classe Tools avec la partie fixe (hors paramètres de requête) de l'URL de callback
+  - le client peut alors renvoyer le navigateur vers KIF-IdP avec l'URL de callback chiffrée en paramètre de l'URL du endpoint d'authentification de KIF-IdP
+
+2- Au retour du navigateur vers l'URL de callback, le client doit déchiffrer le message passé en paramètre, afin de récupérer l'état civil de l'assuré qui vient de s'authentifier.
+
+LIBFC permet de :
+  - déchiffrer le message passé en paramètre de la requête de type GET
+  - vérifier l'absence de rejeu et de saut de session
+
+Pour cela, le client : 
+  - instancie la classe kif.libfc.Tools en passant les valeurs KEY et IV au constructeur
+  - récupère le paramètre info de la requête GET et le fournit à l'instance de Tools via la méthode decode(String)
+  - récupère en retour de l'invocation de Tools.decode(String) l'état civil de l'assuré dans un objet Identity
+  - informe l'instance de Tools de l'identifiant de session et du nonce de la requête initiale, via les méthodes Tools.setState(String) et Tools.setNonce(String)
+  - vérifie l'absence de rejeu et de saut de session via l'invocation de la méthode Tools.checkSecurity() (celle-ci utilise les deux valeurs fournies à la ligne précédente avec le contenu du message déchiffré)
+  - exploite les getter de l'objet Indentity pour récupérer l'ensemble des champs constituant l'état civil
+
+La méthode CommandLine.main() présente un exemple complet de cette cinématique.
+Pour la tester, il suffit de lancer la ligne de commande suivante :
+  java -jar libfc-1_0-with-dependencies.jar
+Cela produit la sortie suivante :
+  Renvoyer l'utilisateur vers le médiateur via une redirection vers l'URL suivante :
+  https://sec.rsi.fr/idp?msg=4dc92fb772d3c03c33afb2a297cec0a37903767037bece0f6b92853d0c6c89d4996644c67c088cfbe50945df533314bff5b5cddfb4888c6e42acfa8e5a1189c07dd7c6fcf9dadbe0ed40cccea8dd17686cc145e803b16f48579205db2acb0c2649e0e87ee590f32a779ddee76385d74e
+  sub: 54f70a557d838bcd26abd22038126819299ef2048c01eab97a7a10545976ef98v1
+  gender: male
+  birthdate: 1981-06-23
+  birthcountry: 99100
+  birthplace: 91272
+  given_name: Eric
+  family_name: Mercier
+  address: formatted: 26 rue Desaix, 75015 Paris
+  address: street_address: 26 rue Desaix
+  address: locality: Paris
+  address: region: Ile-de-France
+  address: postal_code: 75015
+  address: country: France
+  Fin.
