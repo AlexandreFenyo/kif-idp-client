@@ -74,7 +74,7 @@ Pour la tester, il suffit de lancer la ligne de commande suivante :
   java -jar libfc-1_0-with-dependencies.jar
 Cela produit la sortie suivante :
   Renvoyer l'utilisateur vers le médiateur via une redirection vers l'URL suivante :
-  https://sec.rsi.fr/idp?msg=4dc92fb772d3c03c33afb2a297cec0a37903767037bece0f6b92853d0c6c89d4996644c67c088cfbe50945df533314bff5b5cddfb4888c6e42acfa8e5a1189c07dd7c6fcf9dadbe0ed40cccea8dd17686cc145e803b16f48579205db2acb0c2649e0e87ee590f32a779ddee76385d74e
+  https://mediateur.societe.fr/idp?msg=4dc92fb772d3c03c33afb2a297cec0a37903767037bece0f6b92853d0c6c89d4996644c67c088cfbe50945df533314bff5b5cddfb4888c6e42acfa8e5a1189c07dd7c6fcf9dadbe0ed40cccea8dd17686cc145e803b16f48579205db2acb0c2649e0e87ee590f32a779ddee76385d74e
   sub: 54f70a557d838bcd26abd22038126819299ef2048c01eab97a7a10545976ef98v1
   gender: male
   birthdate: 1981-06-23
