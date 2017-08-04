@@ -15,51 +15,51 @@ import org.bouncycastle.crypto.params.*;
 import com.google.gson.*;
 
 public class Tools {
-	final private String KEY;
-	final private String IV;
-	private String nonce = null;
-	private String state = null;
-	private String json = null;
+    final private String KEY;
+    final private String IV;
+    private String nonce = null;
+    private String state = null;
+    private String json = null;
 
-	private void createNonce() {
-		final byte bytes[] = new byte[16];
-		new Random().nextBytes(bytes);
-		nonce = Hex.encodeHexString(bytes);
-	}
-	
-	public String getNonce() {
-		if (nonce == null) createNonce();
-		return nonce;
-	}
+    private void createNonce() {
+        final byte bytes[] = new byte[16];
+        new Random().nextBytes(bytes);
+        nonce = Hex.encodeHexString(bytes);
+    }
+    
+    public String getNonce() {
+        if (nonce == null) createNonce();
+        return nonce;
+    }
 
-	public void setNonce(final String nonce) {
-		this.nonce = nonce;
-	}
+    public void setNonce(final String nonce) {
+        this.nonce = nonce;
+    }
 
-	public String getState() {
-		return state;
-	}
+    public String getState() {
+        return state;
+    }
 
-	public void setState(final String state) {
-		this.state = state;
-	}
+    public void setState(final String state) {
+        this.state = state;
+    }
 
-	public Tools(final String KEY, final String IV) {
-		this.KEY = KEY;
-		this.IV = IV;
-	}
+    public Tools(final String KEY, final String IV) {
+        this.KEY = KEY;
+        this.IV = IV;
+    }
 
-	private String getJson() {
-		return json;
-	}
+    private String getJson() {
+        return json;
+    }
 
-	private void setJson(final String json) {
-		this.json = json;
-	}
+    private void setJson(final String json) {
+        this.json = json;
+    }
 
-	public String encode(final String url) throws DecoderException, DataLengthException, IllegalStateException, InvalidCipherTextException {
-		final String str = url + "?nonce=" + getNonce() + "&state=" + getState();
-		final byte [] info_plaintext = str.getBytes();
+    public String encode(final String url) throws DecoderException, DataLengthException, IllegalStateException, InvalidCipherTextException {
+        final String str = url + "?nonce=" + getNonce() + "&state=" + getState();
+        final byte [] info_plaintext = str.getBytes();
         final PaddedBufferedBlockCipher aes = new PaddedBufferedBlockCipher(new CBCBlockCipher(new AESEngine()), new PKCS7Padding());
         final CipherParameters ivAndKey = new ParametersWithIV(new KeyParameter(Hex.decodeHex(KEY.toCharArray())), Hex.decodeHex(IV.toCharArray()));
         aes.init(true, ivAndKey);
@@ -68,11 +68,11 @@ public class Tools {
         final int length2 = aes.doFinal(inputBuf, length1);
         final byte [] info_ciphertext = ArrayUtils.subarray(inputBuf, 0, length1 + length2);
         final String info_ciphertext_hex = new String(Hex.encodeHex(info_ciphertext));
-		return info_ciphertext_hex;
-	}
+        return info_ciphertext_hex;
+    }
 
-	public Identity decode(final String ciphertext_hex) throws DecoderException, DataLengthException, IllegalStateException, InvalidCipherTextException {
-		final byte [] ciphertext = Hex.decodeHex(ciphertext_hex.toCharArray());
+    public Identity decode(final String ciphertext_hex) throws DecoderException, DataLengthException, IllegalStateException, InvalidCipherTextException {
+        final byte [] ciphertext = Hex.decodeHex(ciphertext_hex.toCharArray());
         final PaddedBufferedBlockCipher aes = new PaddedBufferedBlockCipher(new CBCBlockCipher(new AESEngine()), new PKCS7Padding());
         final CipherParameters ivAndKey = new ParametersWithIV(new KeyParameter(Hex.decodeHex(KEY.toCharArray())), Hex.decodeHex(IV.toCharArray()));
         aes.init(false, ivAndKey);
@@ -82,12 +82,12 @@ public class Tools {
         final int length2 = aes.doFinal(outBuf, length1);
         json = new String(outBuf, 0, length1 + length2, Charset.forName("UTF-8"));
         final Identity identity = new Gson().fromJson(json, Identity.class);
-		return identity;
-	}
-	
-	public boolean checkSecurity() {
+        return identity;
+    }
+    
+    public boolean checkSecurity() {
         final Gson gson = new Gson();
         final Identity identity = gson.fromJson(getJson(), Identity.class);
         return identity.getState().equals(getState()) && identity.getNonce().equals(getNonce());
-	}
+    }
 }
