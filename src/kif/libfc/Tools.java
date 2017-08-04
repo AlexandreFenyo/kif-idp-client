@@ -13,6 +13,7 @@ import org.bouncycastle.crypto.modes.*;
 import org.bouncycastle.crypto.paddings.*;
 import org.bouncycastle.crypto.params.*;
 import com.google.gson.*;
+import org.bouncycastle.crypto.modes.GCMBlockCipher;
 
 public class Tools {
     final private String KEY;
@@ -71,6 +72,20 @@ public class Tools {
         return info_ciphertext_hex;
     }
 
+    public String encodeGCM(final String url) throws DecoderException, DataLengthException, IllegalStateException, InvalidCipherTextException {
+        final String str = url + "?nonce=" + getNonce() + "&state=" + getState();
+        final byte [] info_plaintext = str.getBytes();
+        final GCMBlockCipher gcm = new GCMBlockCipher(new AESEngine());
+        final CipherParameters ivAndKey = new ParametersWithIV(new KeyParameter(Hex.decodeHex(KEY.toCharArray())), Hex.decodeHex(IV.toCharArray()));
+        gcm.init(true, ivAndKey);
+        final byte [] inputBuf = new byte[gcm.getOutputSize(info_plaintext.length)];
+        final int length1 = gcm.processBytes(info_plaintext, 0, info_plaintext.length, inputBuf, 0);
+        final int length2 = gcm.doFinal(inputBuf, length1);
+        final byte [] info_ciphertext = ArrayUtils.subarray(inputBuf, 0, length1 + length2);
+        final String info_ciphertext_hex = new String(Hex.encodeHex(info_ciphertext));
+        return info_ciphertext_hex;
+    }
+    
     public Identity decode(final String ciphertext_hex) throws DecoderException, DataLengthException, IllegalStateException, InvalidCipherTextException {
         final byte [] ciphertext = Hex.decodeHex(ciphertext_hex.toCharArray());
         final PaddedBufferedBlockCipher aes = new PaddedBufferedBlockCipher(new CBCBlockCipher(new AESEngine()), new PKCS7Padding());
@@ -84,7 +99,21 @@ public class Tools {
         final Identity identity = new Gson().fromJson(json, Identity.class);
         return identity;
     }
-    
+
+    public Identity decodeGCM(final String ciphertext_hex) throws DecoderException, DataLengthException, IllegalStateException, InvalidCipherTextException {
+        final byte [] ciphertext = Hex.decodeHex(ciphertext_hex.toCharArray());
+        final GCMBlockCipher gcm = new GCMBlockCipher(new AESEngine());
+        final CipherParameters ivAndKey = new ParametersWithIV(new KeyParameter(Hex.decodeHex(KEY.toCharArray())), Hex.decodeHex(IV.toCharArray()));
+        gcm.init(false, ivAndKey);
+        final int minSize = gcm.getOutputSize(ciphertext.length);
+        final byte [] outBuf = new byte[minSize];
+        final int length1 = gcm.processBytes(ciphertext, 0, ciphertext.length, outBuf, 0);
+        final int length2 = gcm.doFinal(outBuf, length1);
+        json = new String(outBuf, 0, length1 + length2, Charset.forName("UTF-8"));
+        final Identity identity = new Gson().fromJson(json, Identity.class);
+        return identity;
+    }
+
     public boolean checkSecurity() {
         final Gson gson = new Gson();
         final Identity identity = gson.fromJson(getJson(), Identity.class);
