@@ -52,7 +52,6 @@ public class CommandLine {
             System.out.println("  renvoyer l'utilisateur vers le médiateur via une redirection vers l'URL suivante :\n" + url_to_call);
         }
 
-
         // VERSION AES-256-GCM
         {
             System.out.println("VERSION AES-256-GCM :");
