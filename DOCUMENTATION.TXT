@@ -1,4 +1,4 @@
-A. Fenyo - 2016
+A. Fenyo - 2016, 2017
 
 Bibliothèque LIBFC
 
@@ -69,12 +69,27 @@ Pour cela, le client :
   - vérifie l'absence de rejeu et de saut de session via l'invocation de la méthode Tools.checkSecurity() (celle-ci utilise les deux valeurs fournies à la ligne précédente avec le contenu du message déchiffré)
   - exploite les getter de l'objet Indentity pour récupérer l'ensemble des champs constituant l'état civil
 
-La méthode CommandLine.main() présente un exemple complet de cette cinématique.
+--------------------------------------------------------------------------------
+
+Chiffrement :
+
+Deux méthodes de chiffrement sont proposées : AES-256-CBC et AES-256-GCM. La seconde intègre une signature, en plus du chiffrement. Elle est donc particulièrement conseillée.
+
+--------------------------------------------------------------------------------
+
+Exemple :
+
+La méthode CommandLine.main() présente un exemple complet de cette cinématique, avec les deux méthodes de chiffrement, et les déchiffrements associés.
+
 Pour la tester, il suffit de lancer la ligne de commande suivante :
   java -jar libfc-1_0-with-dependencies.jar
 Cela produit la sortie suivante :
-  Renvoyer l'utilisateur vers le médiateur via une redirection vers l'URL suivante :
-  https://mediateur.societe.fr/idp?msg=4dc92fb772d3c03c33afb2a297cec0a37903767037bece0f6b92853d0c6c89d4996644c67c088cfbe50945df533314bff5b5cddfb4888c6e42acfa8e5a1189c07dd7c6fcf9dadbe0ed40cccea8dd17686cc145e803b16f48579205db2acb0c2649e0e87ee590f32a779ddee76385d74e
+  VERSION AES-256-CBC :
+    renvoyer l'utilisateur vers le médiateur via une redirection vers l'URL suivante :
+  https://mediateur.societe.fr/idp?msg=ef65cd05318821337128e29fc43869d54840b2684f1b599b6f191a8d1d0296e00466fa44e0e6ffc28cd5f5fff9d61f819ca4121fcab04c45d0295733d35fea8f74364333782f88b475d2dfdbf569426fb53aa170eacb269e6a91b73d17927d0684ee16ce0aa2663a0cdbfac614b1e359
+  VERSION AES-256-GCM :
+    renvoyer l'utilisateur vers le médiateur via une redirection vers l'URL suivante :
+  https://mediateur.societe.fr/idp?msg=0c6989f6007c3cba68a4930767b5a1a50d2e9756effeb2a348cd2b1778633da45028b1dc72fdbc59ea0c8df3816667eebfe396ac5dd152279b695612f348eade1ff4bb7c9deee7068a2d2abb45cd24b8fa0cb9803ff4b6941935aaa39f7e196e55999587ebd29a2db4563b88126a2b687547e909feb316ce2baf833c
   sub: 54f70a557d838bcd26abd22038126819299ef2048c01eab97a7a10545976ef98v1
   gender: male
   birthdate: 1981-06-23
